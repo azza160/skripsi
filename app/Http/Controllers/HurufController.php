@@ -36,12 +36,14 @@ class HurufController extends Controller
     
     public function pilihHuruf(){
         $user = auth()->user();
+        $isKatakanaUnlocked = $user->level >= 2;
 
         return Inertia::render('User/Huruf',[
             'currentLevel' => $user->level,
             'currentExp' => $user->exp,
             'maxExp' => $this->calculateNextLevelExp($user->level),
             'user' => $user,
+            'isKatakanaUnlocked' => $isKatakanaUnlocked
         ]);
     }
 
@@ -120,6 +122,11 @@ class HurufController extends Controller
 
     public function kategoriKatakana(){
         $user = auth()->user();
+        
+        // Check if user has required level
+        if ($user->level < 2) {
+            return redirect()->route('huruf')->with('error', 'Anda harus mencapai level 2 untuk mengakses Katakana.');
+        }
 
         //ambil data dari table user_belajar yang pembelajaran_id nya belajar-katakana-gojuon
         $userBelajar = UserBelajar::where('pembelajaran_id', 'belajar-katakana-gojuon')->first();
@@ -216,6 +223,11 @@ class HurufController extends Controller
     {
         $user = auth()->user();
         
+        // Check if user tries to access Katakana without required level
+        if ($jenis === 'katakana' && $user->level < 2) {
+            return redirect()->route('huruf')->with('error', 'Anda harus mencapai level 2 untuk mengakses Katakana.');
+        }
+
         // Validasi manual untuk jenis dan kategori huruf
         $allowedJenis = ['hiragana', 'katakana'];
         $allowedKategori = ['gojuon', 'dakuten', 'handakuten', 'youon', 'sokuon', 'choon'];

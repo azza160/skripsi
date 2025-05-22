@@ -82,6 +82,71 @@ import Dashboard from "@/Layouts/DashboardLayout";
 
 import axios from "axios";
 
+// Loading Component
+const Loading = () => {
+    return (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="relative w-16 h-16">
+                <motion.div
+                    className="absolute inset-0 border-4 border-[hsl(252,94%,56%)] rounded-full"
+                    animate={{
+                        rotate: 360,
+                    }}
+                    transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                    }}
+                />
+                <motion.div
+                    className="absolute inset-2 border-4 border-[hsl(252,94%,70%)] rounded-full"
+                    animate={{
+                        rotate: -360,
+                    }}
+                    transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        ease: "linear",
+                    }}
+                />
+            </div>
+            <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="ml-4 text-gray-600 font-medium"
+            >
+                Memuat konten...
+            </motion.p>
+        </div>
+    );
+};
+
+// Alert Component
+const Alert = ({ message, onClose }) => {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-4 right-4 bg-background border border-primary/20 shadow-lg rounded-lg p-4 z-50"
+        >
+            <div className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                    <Check className="h-5 w-5 text-green-500" />
+                </div>
+                <p className="text-sm font-medium">{message}</p>
+                <button
+                    onClick={onClose}
+                    className="ml-4 flex-shrink-0 text-muted-foreground hover:text-foreground"
+                >
+                    <X className="h-4 w-4" />
+                </button>
+            </div>
+        </motion.div>
+    );
+};
+
 // Komponen untuk jalur belajar dengan animasi
 const LearningPath = () => {
     const ref = useRef(null);
@@ -259,8 +324,22 @@ function VocabularyContent({ vocabulary }) {
     const filterSectionRef = useRef(null);
     const searchInputRef = useRef(null);
     const [showDialog, setShowDialog] = useState(false);
+    
+    // Add new states for loading and alert
+    const [isPageLoading, setIsPageLoading] = useState(true);
+    const [isButtonLoading, setIsButtonLoading] = useState(false);
+    const [alertMessage, setAlertMessage] = useState(null);
+    const [loadingButtonId, setLoadingButtonId] = useState(null);
 
-    const itemsPerPage = 6;
+    const itemsPerPage = 6; // Add back the itemsPerPage constant
+
+    // Simulate initial page load
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsPageLoading(false);
+        }, 800);
+        return () => clearTimeout(timer);
+    }, []);
 
     //audio method
     const playAudio = (url) => {
@@ -365,38 +444,55 @@ function VocabularyContent({ vocabulary }) {
         filterAndSortVocabulary();
     }, [vocabulary, filter, sortBy, searchTerm]);
 
-    // Toggle favorite status
+    // Toggle favorite status with loading and alert
     const toggleFavorite = async (id) => {
         try {
+            setLoadingButtonId(id);
+            setIsButtonLoading(true);
             const response = await axios.post(route('user.belajar.update-user-kosakata-favorite'), { 
                 id: id
             });
-            console.log(response);
-            if(response.ok){
-                console.log(response.data);
-            } else {
-                console.log(response.data);
+            
+            if (response.data.success) {
+                setAlertMessage('Kosakata berhasil ditandai sebagai favorit');
+                // Refresh data without resetting pagination
+                const updatedVocab = vocabList.map(item => 
+                    item.id === id ? { ...item, isFavorite: !item.isFavorite } : item
+                );
+                setVocabList(updatedVocab);
             }
         } catch (error) {
-            console.log(error);
+            console.error(error);
+            setAlertMessage('Gagal mengubah status favorit');
+        } finally {
+            setIsButtonLoading(false);
+            setLoadingButtonId(null);
         }
     };
 
-    // Toggle learned status
+    // Toggle learned status with loading and alert
     const toggleLearned = async (id) => {
-        console.log(id)
         try {
+            setLoadingButtonId(id);
+            setIsButtonLoading(true);
             const response = await axios.post(route('user.belajar.update-user-kosakata'), { 
                 id: id
             });
-            console.log(response);
-            if(response.ok){
-                console.log(response.data);
-            } else {
-                console.log(response.data);
+            
+            if (response.data.success) {
+                setAlertMessage('Status belajar berhasil diperbarui');
+                // Refresh data without resetting pagination
+                const updatedVocab = vocabList.map(item => 
+                    item.id === id ? { ...item, isLearned: !item.isLearned } : item
+                );
+                setVocabList(updatedVocab);
             }
         } catch (error) {
-            console.log(error);
+            console.error(error);
+            setAlertMessage('Gagal mengubah status belajar');
+        } finally {
+            setIsButtonLoading(false);
+            setLoadingButtonId(null);
         }
     };
 
@@ -469,6 +565,17 @@ function VocabularyContent({ vocabulary }) {
 
     return (
         <>
+            <AnimatePresence>
+                {isPageLoading && <Loading />}
+                {isButtonLoading && <Loading />}
+                {alertMessage && (
+                    <Alert 
+                        message={alertMessage} 
+                        onClose={() => setAlertMessage(null)} 
+                    />
+                )}
+            </AnimatePresence>
+            
             <AlertDialog
                 open={showDialog}
                 onOpenChange={setShowDialog}
@@ -1092,8 +1199,11 @@ function VocabularyContent({ vocabulary }) {
                                                         toggleFavorite(item.id);
                                                     }}
                                                     className="p-2 rounded-full hover:bg-yellow-500/10 transition-all duration-300 hover:scale-125 hover:rotate-12"
+                                                    disabled={isButtonLoading && loadingButtonId === item.id}
                                                 >
-                                                    {item.isFavorite ? (
+                                                    {isButtonLoading && loadingButtonId === item.id ? (
+                                                        <div className="w-5 h-5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+                                                    ) : item.isFavorite ? (
                                                         <Star
                                                             size={20}
                                                             className="text-yellow-500 fill-yellow-500"
@@ -1123,8 +1233,11 @@ function VocabularyContent({ vocabulary }) {
                                                             ? "bg-green-500/5 text-green-600 border-green-500/30 hover:bg-green-500/10"
                                                             : "bg-muted/30 hover:bg-muted/50"
                                                     }`}
+                                                    disabled={isButtonLoading && loadingButtonId === item.id}
                                                 >
-                                                    {item.isLearned ? (
+                                                    {isButtonLoading && loadingButtonId === item.id ? (
+                                                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2" />
+                                                    ) : item.isLearned ? (
                                                         <BookMarked
                                                             size={16}
                                                             className="mr-2 text-green-600"

@@ -23,7 +23,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link, router } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
 import { Loading } from "../../components/Loading";
 
 // Content Loading Component
@@ -69,17 +69,13 @@ const ContentLoading = () => {
 export default function DashboardUser() {
     const [isPageLoading, setIsPageLoading] = useState(true);
     const [isButtonLoading, setIsButtonLoading] = useState(false);
-    const [userLevel, setUserLevel] = useState(2);
+    const { currentLevel, isKatakanaUnlocked } = usePage().props;
     
-
-    // Simulasi level pengguna - dalam implementasi nyata, ini akan diambil dari state aplikasi
-    const katakanaRequiredLevel = 3;
-    const isKatakanaUnlocked = userLevel >= katakanaRequiredLevel;
-
-    // Untuk demo: toggle level
-    const toggleLevel = () => {
-        setUserLevel((prev) => (prev >= katakanaRequiredLevel ? 1 : 3));
-    };
+    // Add console log to debug props
+    useEffect(() => {
+        console.log('Current Level:', currentLevel);
+        console.log('Is Katakana Unlocked:', isKatakanaUnlocked);
+    }, [currentLevel, isKatakanaUnlocked]);
 
     // Animasi variants
     const containerVariants = {
@@ -348,21 +344,27 @@ export default function DashboardUser() {
                                         </motion.div>
 
                                         <motion.div variants={itemVariants}>
-                                            <Card className="overflow-hidden border border-border hover:shadow-md transition-all duration-300 rounded-2xl h-full">
+                                            <Card className={`overflow-hidden border border-border hover:shadow-md transition-all duration-300 rounded-2xl h-full ${!isKatakanaUnlocked ? 'opacity-75' : ''}`}>
                                                 <div className="bg-gradient-to-r from-primary/10 to-primary/20 p-6 flex justify-between items-center">
-                                                    <BookText className="text-primary h-12 w-12" />
-                                                    <div className="bg-primary/10 text-primary text-sm font-medium px-3 py-1 rounded-full flex items-center">
-                                                        <Unlock
-                                                            size={14}
-                                                            className="mr-1"
-                                                        />
-                                                        Terbuka
+                                                    <BookText className={`${!isKatakanaUnlocked ? 'text-muted-foreground' : 'text-primary'} h-12 w-12`} />
+                                                    <div className={`${isKatakanaUnlocked ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'} text-sm font-medium px-3 py-1 rounded-full flex items-center`}>
+                                                        {isKatakanaUnlocked ? (
+                                                            <>
+                                                                <Unlock size={14} className="mr-1" />
+                                                                Terbuka
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Lock size={14} className="mr-1" />
+                                                                Terkunci
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 <CardHeader>
                                                     <CardTitle className="text-2xl flex items-center">
                                                         Katakana
-                                                        <span className="ml-2 text-3xl font-normal text-primary">
+                                                        <span className={`ml-2 text-3xl font-normal ${!isKatakanaUnlocked ? 'text-muted-foreground' : 'text-primary'}`}>
                                                         カタカナ
                                                         </span>
                                                     </CardTitle>
@@ -375,35 +377,35 @@ export default function DashboardUser() {
                                                 <CardContent>
                                                     <ul className="space-y-2 text-sm">
                                                         <li className="flex items-start">
-                                                            <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center mr-2 mt-0.5">
-                                                                <span className="text-primary text-xs">
+                                                            <div className={`h-5 w-5 rounded-full ${!isKatakanaUnlocked ? 'bg-muted' : 'bg-primary/10'} flex items-center justify-center mr-2 mt-0.5`}>
+                                                                <span className={`${!isKatakanaUnlocked ? 'text-muted-foreground' : 'text-primary'} text-xs`}>
                                                                     1
                                                                 </span>
                                                             </div>
-                                                            <span>
+                                                            <span className={!isKatakanaUnlocked ? 'text-muted-foreground' : ''}>
                                                         46 karakter dengan
                                                         bentuk yang lebih tegas
                                                         </span>
                                                         </li>
                                                         <li className="flex items-start">
-                                                            <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center mr-2 mt-0.5">
-                                                                <span className="text-primary text-xs">
+                                                            <div className={`h-5 w-5 rounded-full ${!isKatakanaUnlocked ? 'bg-muted' : 'bg-primary/10'} flex items-center justify-center mr-2 mt-0.5`}>
+                                                                <span className={`${!isKatakanaUnlocked ? 'text-muted-foreground' : 'text-primary'} text-xs`}>
                                                                     2
                                                                 </span>
                                                             </div>
-                                                            <span>
+                                                            <span className={!isKatakanaUnlocked ? 'text-muted-foreground' : ''}>
                                                         Digunakan untuk
                                                             kata-kata dari bahasa
                                                             asing
                                                         </span>
                                                         </li>
                                                         <li className="flex items-start">
-                                                            <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center mr-2 mt-0.5">
-                                                                <span className="text-primary text-xs">
+                                                            <div className={`h-5 w-5 rounded-full ${!isKatakanaUnlocked ? 'bg-muted' : 'bg-primary/10'} flex items-center justify-center mr-2 mt-0.5`}>
+                                                                <span className={`${!isKatakanaUnlocked ? 'text-muted-foreground' : 'text-primary'} text-xs`}>
                                                                     3
                                                                 </span>
                                                             </div>
-                                                            <span>
+                                                            <span className={!isKatakanaUnlocked ? 'text-muted-foreground' : ''}>
                                                         Penting untuk membaca
                                                         nama tempat dan merek
                                                         </span>
@@ -412,15 +414,20 @@ export default function DashboardUser() {
                                                 </CardContent>
                                                 <CardFooter>
                                                     <Button 
-                                                        className="w-full group py-5 xl:py-6"
+                                                        className={`w-full group py-5 xl:py-6 ${!isKatakanaUnlocked ? 'bg-muted hover:bg-muted cursor-not-allowed' : ''}`}
                                                         onClick={handleClickKatakana}
-                                                        disabled={isButtonLoading}
+                                                        disabled={isButtonLoading || !isKatakanaUnlocked}
                                                     >
                                                         {isButtonLoading ? (
                                                             <div className="flex items-center justify-center">
                                                                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                                                                 Memuat...
                                                             </div>
+                                                        ) : !isKatakanaUnlocked ? (
+                                                            <>
+                                                                Level {currentLevel}/2 Diperlukan
+                                                                <Lock size={16} className="ml-2" />
+                                                            </>
                                                         ) : (
                                                             <>
                                                                 Mulai Belajar Katakana
@@ -497,8 +504,7 @@ export default function DashboardUser() {
                                         >
                                             <p className="text-muted-foreground text-sm bg-card p-4 rounded-xl border border-border inline-flex items-center">
                                                 <Lock size={14} className="mr-2" />
-                                                Katakana akan terbuka setelah kamu
-                                                menyelesaikan 3 pelajaran Hiragana.
+                                                Katakana akan terbuka setelah kamu mencapai level 2.
                                             </p>
                                         </motion.div>
                                     )}
@@ -520,30 +526,6 @@ export default function DashboardUser() {
                                                 className="ml-2 group-hover:translate-x-1 transition-transform"
                                             />
                                         </Button>
-                                    </motion.div>
-
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ delay: 0.7 }}
-                                        className="mt-8 text-center"
-                                    >
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            onClick={toggleLevel}
-                                            className="text-xs"
-                                        >
-                                            {isKatakanaUnlocked
-                                                ? "Demo: Kunci Katakana"
-                                                : "Demo: Buka Katakana"}
-                                        </Button>
-                                        <p className="mt-2 text-xs text-muted-foreground">
-                                            Level saat ini: {userLevel}{" "}
-                                            {isKatakanaUnlocked
-                                                ? "(Katakana terbuka)"
-                                                : "(Katakana terkunci)"}
-                                        </p>
                                     </motion.div>
                                 </motion.div>
                             )}

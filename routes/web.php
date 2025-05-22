@@ -58,9 +58,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/huruf/kategori-hiragana', [HurufController::class,"kategoriHiragana"])->name('kategori-huruf-hiragana');
 
     Route::get('/dashboard/huruf/kategori-katakana',[HurufController::class,"kategoriKatakana"])->name('kategori-huruf-katakana');
-
+    
     Route::get('/dashboard/huruf/{jenis}/{kategori}',[HurufController::class,'GetHurufByKategori'])->name('huruf-list');
-
     Route::get('/dashboard/huruf/{jenis}/{kategori}/{id}', [HurufController::class, 'showDetailHuruf'])->name('huruf-hiragana-detail');
 
     Route::get('/dashboard/kosakata',[KosakataController::class,'getAllKosakata'])->name('list-kosakata');
