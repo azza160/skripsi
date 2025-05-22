@@ -44,6 +44,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { SidebarLink } from "@/components/sidebar-link"
+import LevelBar from "../components/LevelBar"
+import { usePage,router} from "@inertiajs/react"
 
 
 // Add this after the imports section
@@ -127,10 +129,18 @@ export const useLayout = () => {
 
 export default function Dashboard({ children }) {
   const [mounted, setMounted] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    // Initialize from localStorage if available, otherwise default to false
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebarOpen')
+      return saved !== null ? JSON.parse(saved) : false
+    }
+    return false
+  })
   const { theme, toggleTheme } = useTheme()
   const [showBanner, setShowBanner] = useState(true)
  
+  const {currentLevel,currentExp,maxExp,user} = usePage().props
   
   const isMobile = useIsMobile()
   const sidebarRef = useRef(null)
@@ -145,8 +155,7 @@ export default function Dashboard({ children }) {
   useEffect(() => {
     if (isMobile) {
       setSidebarOpen(false)
-    } else {
-      setSidebarOpen(true)
+      setShowMobileMenu(false)
     }
   }, [isMobile])
 
@@ -154,9 +163,25 @@ export default function Dashboard({ children }) {
     if (isMobile) {
       setShowMobileMenu(!showMobileMenu)
     } else {
-      setSidebarOpen(!sidebarOpen)
+      const newState = !sidebarOpen
+      setSidebarOpen(newState)
+      // Save to localStorage
+      localStorage.setItem('sidebarOpen', JSON.stringify(newState))
     }
   }
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) { // desktop breakpoint
+        const saved = localStorage.getItem('sidebarOpen')
+        setSidebarOpen(saved !== null ? JSON.parse(saved) : false)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   // Generate random positions for floating characters
   const getRandomPosition = (index) => {
@@ -183,6 +208,14 @@ export default function Dashboard({ children }) {
       document.head.removeChild(styleElement);
     };
   }, []);
+
+    const handleLogout = () => {
+      router.post(route('logout'), {
+        onSuccess: () => {
+          window.location.href = '/login';
+        }
+      });
+    };
 
   return (
     <LayoutProvider value={{ sidebarOpen, isMobile }}>
@@ -218,12 +251,12 @@ export default function Dashboard({ children }) {
             <div className="px-4 py-6">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary dark:bg-violet-600 text-white">
-                  <span className="font-bold text-lg">AS</span>
+                  <span className="font-bold text-lg">NV</span>
                 </div>
                 {sidebarOpen && (
                   <div className="overflow-hidden">
-                    <h2 className="text-lg font-bold text-foreground dark:text-white">AdminSchool</h2>
-                    <p className="text-xs text-muted-foreground dark:text-slate-400">School Dashboard</p>
+                    <h2 className="text-lg font-bold text-foreground dark:text-white">NihonggoVocabulary</h2>
+                    <p className="text-xs text-muted-foreground dark:text-slate-400">Vocabulary Dashboard</p>
                   </div>
                 )}
               </div>
@@ -241,7 +274,7 @@ export default function Dashboard({ children }) {
                 <SidebarLink icon={<Type className="h-5 w-5" />} label="Huruf Jepang" isActive={['huruf', 'kategori-huruf-hiragana', 'huruf-hiragana','huruf-hiragana-detail'].some(name => route().current(name))}
                 isOpen={sidebarOpen} href={route('huruf')} />
                 <SidebarLink icon={<BookOpenText className="h-5 w-5" />} label="Kosakata" isActive={['list-kosakata', 'detail-kosakata', 'kosakata-flashcard'].some(name => route().current(name))} isOpen={sidebarOpen} href={route('list-kosakata')} />
-                <SidebarLink icon={<FlipVertical className="h-5 w-5" />} label="Flashcard" isActive={false} isOpen={sidebarOpen} href={route('list-kosakata')} />
+                <SidebarLink icon={<FlipVertical className="h-5 w-5" />} label="Flashcard" isActive={['flashcard'].some(name => route().current(name))} isOpen={sidebarOpen} href={route('flashcard')} />
               
               </nav>
 
@@ -328,7 +361,7 @@ export default function Dashboard({ children }) {
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary dark:bg-violet-600 text-white">
                       <span className="font-bold">AS</span>
                     </div>
-                    <h2 className="text-lg font-bold text-foreground dark:text-white">AdminSchool</h2>
+                    <h2 className="text-lg font-bold text-foreground dark:text-white">NihonggoVocabulary</h2>
                   </div>
                   <Button
                     variant="ghost"
@@ -354,67 +387,12 @@ export default function Dashboard({ children }) {
                   {/* Level Bar for Mobile */}
                   <div className="px-4 py-3 mt-2 mb-4">
                     <h3 className="mb-2 text-xs font-semibold uppercase text-muted-foreground dark:text-slate-500">
-                      Your Progress
+                      Your Level
                     </h3>
-                    <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="relative w-[300px] h-[50px] bg-slate-200/25 dark:bg-slate-950 rounded-md overflow-hidden cursor-pointer group border border-slate-500">
-                        
-                        {/* Progress bar line */}
-                        <div className="absolute top-1/2 left-[60px] right-[60px] h-[8px] bg-slate-300 transform -translate-y-1/2 border-border dark:border-slate-800">
-                          <div 
-                            className="h-full bg-violet-600" 
-                            style={{ width: '75%', transition: 'width 0.5s ease-in-out' }}
-                          />
-                        </div>
-
-                        {/* Left level circle */}
-                        <div className="absolute left-[20px] top-1/2 transform -translate-y-1/2 flex items-center justify-center">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border dark:border-slate-800 text-foreground dark:text-white font-bold">
-                            8
-                          </div>
-                        </div>
-
-                        {/* Right level circle */}
-                        <div className="absolute right-[20px] top-1/2 transform -translate-y-1/2 flex items-center justify-center">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border dark:border-slate-800 text-foreground dark:text-white font-bold">
-                            9
-                          </div>
-                        </div>
-                      </div>
-                    </TooltipTrigger>
-
-                    {/* Tooltip */}
-                    <TooltipContent side="bottom" className="bg-black text-white border border-white/10 p-4 rounded-lg shadow-md w-64">
-                      <div className="space-y-3 text-sm">
-                        <div className="flex justify-between items-center">
-                          <span className="font-semibold">Level Progress</span>
-                          <span className="text-xs font-medium bg-white/10 px-2 py-1 rounded-full">75% Complete</span>
-                        </div>
-                        <div className="space-y-1 text-xs">
-                          <div className="flex justify-between">
-                            <span>Current Level:</span>
-                            <span className="font-medium">8 - Intermediate</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Current XP:</span>
-                            <span className="font-medium">750 / 1000</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Next Level:</span>
-                            <span className="font-medium">250 XP remaining</span>
-                          </div>
-                        </div>
-                        {/* Mini progress bar */}
-                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden mt-2">
-                          <div className="h-full bg-white" style={{ width: '75%' }}></div>
-                        </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-</div>
+                    <div className="w-full">
+                    <LevelBar currentLevel={currentLevel}  currentExp={currentExp} maxExp={maxExp} />
+                  </div>
+                  </div>
 
                   <h3 className="mb-3 mt-6 px-4 text-xs font-semibold uppercase text-muted-foreground dark:text-slate-500">
                     Uji Kemampuan
@@ -463,99 +441,52 @@ export default function Dashboard({ children }) {
           )}
         >
           <header className={cn(
-            "fixed z-[100] top-0 flex h-16 items-center justify-between border-b border-border dark:border-slate-800 bg-background dark:bg-slate-950 px-4 md:px-6",
+            "fixed z-[30] top-0 flex h-16 items-center justify-between border-b border-border dark:border-slate-800 bg-background dark:bg-slate-950 px-4 md:px-6",
             isMobile ? "left-0 right-0" : sidebarOpen ? "left-80 right-0" : "left-20 right-0",
             "transition-all duration-300"
-          )}
-          >
-            <div className="flex w-full justify-between items-center gap-4  bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              {isMobile && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleSidebar}
-                  className="text-muted-foreground dark:text-slate-400"
-                >
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={showMobileMenu ? "close" : "menu"}
-                      initial={{ opacity: 0, rotate: showMobileMenu ? -90 : 90 }}
-                      animate={{ opacity: 1, rotate: 0 }}
-                      exit={{ opacity: 0, rotate: showMobileMenu ? 90 : -90 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {showMobileMenu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                    </motion.div>
-                  </AnimatePresence>
-                </Button>
-              )}
+          )}>
+            <div className="flex w-full justify-between items-center gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              {/* Left Section */}
+              <div className="flex items-center gap-4">
+                {isMobile && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleSidebar}
+                    className="text-muted-foreground dark:text-slate-400"
+                  >
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={showMobileMenu ? "close" : "menu"}
+                        initial={{ opacity: 0, rotate: showMobileMenu ? -90 : 90 }}
+                        animate={{ opacity: 1, rotate: 0 }}
+                        exit={{ opacity: 0, rotate: showMobileMenu ? 90 : -90 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {showMobileMenu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                      </motion.div>
+                    </AnimatePresence>
+                  </Button>
+                )}
 
-              <div className=" hidden md:flex items-center">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="relative w-[300px] h-[50px] bg-slate-200/25 dark:bg-slate-950 rounded-lg overflow-hidden cursor-pointer group border border-border dark:border-slate-800">
-                        
-                        {/* Progress bar line */}
-                        <div className="absolute top-1/2 left-[60px] right-[60px] h-[8px] bg-slate-300 transform -translate-y-1/2 border-border dark:border-slate-800">
-                          <div 
-                            className="h-full bg-violet-600" 
-                            style={{ width: '75%', transition: 'width 0.5s ease-in-out' }}
-                          />
-                        </div>
-
-                        {/* Left level circle */}
-                        <div className="absolute left-[20px] top-1/2 transform -translate-y-1/2 flex items-center justify-center">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border dark:border-slate-800 text-foreground dark:text-white font-bold">
-                            8
-                          </div>
-                        </div>
-
-                        {/* Right level circle */}
-                        <div className="absolute right-[20px] top-1/2 transform -translate-y-1/2 flex items-center justify-center">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border dark:border-slate-800 text-foreground dark:text-white font-bold">
-                            9
-                          </div>
-                        </div>
-                      </div>
-                    </TooltipTrigger>
-
-                    {/* Tooltip */}
-                    <TooltipContent side="bottom" className="bg-black text-white border border-white/10 p-4 rounded-lg shadow-md w-64">
-                      <div className="space-y-3 text-sm">
-                        <div className="flex justify-between items-center">
-                          <span className="font-semibold">Level Progress</span>
-                          <span className="text-xs font-medium bg-white/10 px-2 py-1 rounded-full">75% Complete</span>
-                        </div>
-                        <div className="space-y-1 text-xs">
-                          <div className="flex justify-between">
-                            <span>Current Level:</span>
-                            <span className="font-medium">8 - Intermediate</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Current XP:</span>
-                            <span className="font-medium">750 / 1000</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Next Level:</span>
-                            <span className="font-medium">250 XP remaining</span>
-                          </div>
-                        </div>
-                        {/* Mini progress bar */}
-                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden mt-2">
-                          <div className="h-full bg-white" style={{ width: '75%' }}></div>
-                        </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {/* Level Bar - Only show on desktop */}
+                {!isMobile && (
+                  <div className="w-[300px]">
+                   <LevelBar currentLevel={currentLevel}  currentExp={currentExp} maxExp={maxExp} />
+                  </div>
+                )}
               </div>
 
+              {/* Right Section */}
               <div className="flex items-center gap-3">
-                {/* Theme Toggle - Floating */}
-               
-                 
-            
+                {/* Theme Toggle */}
+                <div className="fixed bottom-[80px] right-5 z-20 flex h-[48px] w-[48px] items-center justify-center rounded-full bg-primary dark:bg-violet-600 text-white shadow-lg">
+                  {theme === "dark" ? (
+                    <Sun className="h-5 w-5 cursor-pointer" onClick={toggleTheme} />
+                  ) : (
+                    <Moon className="h-5 w-5 cursor-pointer" onClick={toggleTheme} />
+                  )}
+                </div>
 
                 {/* Notification */}
                 <Button variant="ghost" size="icon" className="relative text-muted-foreground dark:text-slate-400">
@@ -570,53 +501,57 @@ export default function Dashboard({ children }) {
                 </Button>
 
                 {/* Profile Dropdown */}
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 transition-all hover:ring-2 hover:ring-primary/50 dark:hover:ring-violet-500/50">
-        <Avatar className="border-2 border-primary/20 dark:border-violet-500/20 transition-all hover:border-primary dark:hover:border-violet-500">
-          <AvatarImage src="/placeholder.svg?height=40&width=40" />
-          <AvatarFallback>ZF</AvatarFallback>
-        </Avatar>
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="end" className="w-56 p-0 overflow-hidden z-[110]" forceMount>
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.2 }}
-      >
-        <div className="bg-primary/10 dark:bg-violet-500/10 p-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12 border-2 border-primary dark:border-violet-500">
-              <AvatarImage src="/placeholder.svg?height=48&width=48" />
-              <AvatarFallback>ZF</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium text-foreground dark:text-white">Zain Fathoni</p>
-              <p className="text-xs text-muted-foreground dark:text-slate-400">zain@example.com</p>
-            </div>
-          </div>
-        </div>
-        <DropdownMenuSeparator className="m-0" />
-        <div className="p-1">
-          <DropdownMenuItem className="flex items-center gap-2 rounded-md p-2 cursor-pointer hover:bg-primary/10 dark:hover:bg-violet-500/10">
-            <User className="h-4 w-4 text-primary dark:text-violet-400" />
-            <span>Profile</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="flex items-center gap-2 rounded-md p-2 cursor-pointer hover:bg-primary/10 dark:hover:bg-violet-500/10">
-            <Settings className="h-4 w-4 text-primary dark:text-violet-400" />
-            <span>Settings</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="flex items-center gap-2 rounded-md p-2 cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/20">
-            <LogOut className="h-4 w-4 text-red-500" />
-            <span className="text-red-500">Log out</span>
-          </DropdownMenuItem>
-        </div>
-      </motion.div>
-    </DropdownMenuContent>
-  </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 transition-all hover:ring-2 hover:ring-primary/50 dark:hover:ring-violet-500/50">
+                      <Avatar className="border-2 border-primary/20 dark:border-violet-500/20 transition-all hover:border-primary dark:hover:border-violet-500">
+                        <AvatarImage src={user.foto} />
+                        <AvatarFallback>{user.nama_pengguna.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 p-0 overflow-hidden z-[110]" forceMount>
+                    <motion.div
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="bg-primary/10 dark:bg-violet-500/10 p-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-12 w-12 border-2 border-primary dark:border-violet-500">
+                            <AvatarImage src={user.foto} />
+                            <AvatarFallback>{user.nama_pengguna.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-foreground dark:text-white">{user.nama_pengguna}</p>
+                            <p className="text-xs text-muted-foreground dark:text-slate-400">{user.email}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <DropdownMenuSeparator className="m-0" />
+                      <div className="p-1">
+                        <DropdownMenuItem className="flex items-center gap-2 rounded-md p-2 cursor-pointer hover:bg-primary/10 dark:hover:bg-violet-500/10">
+                          <User className="h-4 w-4 text-primary dark:text-violet-400" />
+                          <span>Profile</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-2 rounded-md p-2 cursor-pointer hover:bg-primary/10 dark:hover:bg-violet-500/10">
+                          <Settings className="h-4 w-4 text-primary dark:text-violet-400" />
+                          <span>Settings</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <button onClick={handleLogout} className="w-full hover:bg-red-100 dark:hover:bg-red-900/20">
+                        <DropdownMenuItem className="flex items-center gap-2 rounded-md p-2 cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/20">
+                          <LogOut className="h-4 w-4 text-red-500" />
+                        
+                            <span className="text-red-500">Log out</span>
+                        
+                        </DropdownMenuItem>
+                        </button>
+                      </div>
+                    </motion.div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </header>
@@ -635,14 +570,15 @@ export default function Dashboard({ children }) {
         textShadow: '0 0 15px rgba(139, 92, 246, 0.2)'
       }}
       animate={{
-        y: [0, -15, 0],
-        rotate: [0, index % 2 === 0 ? 5 : -5, 0],
-        opacity: [0.3, 0.7, 0.3],
-        scale: [1, 1.05, 1]
+        y: [-5, 5],
+        rotate: [0, index % 2 === 0 ? 5 : -5],
+        opacity: [0.3, 0.7],
+        scale: [1, 1.05]
       }}
       transition={{
         duration: 4 + index % 3,
         repeat: Number.POSITIVE_INFINITY,
+        repeatType: "reverse",
         ease: "easeInOut",
         delay: getRandomPosition(index).delay,
       }}
@@ -652,15 +588,15 @@ export default function Dashboard({ children }) {
   ))}
 
             {children}
-            <footer className="mt-auto pt-8">
+            <footer className="mt-auto pt-8 pb-[40px]">
   <div className="border-t border-border dark:border-slate-800 pt-6 pb-4 bg-gradient-to-b from-transparent to-muted/20 dark:to-slate-900/30">
     <div className="container mx-auto px-4">
       <div className="flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-violet-500 dark:from-violet-600 dark:to-indigo-500 flex items-center justify-center text-white font-bold text-sm shadow-md">AS</div>
+          <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-violet-500 dark:from-violet-600 dark:to-indigo-500 flex items-center justify-center text-white font-bold text-sm shadow-md">NV</div>
           <div>
-            <h3 className="font-medium text-foreground dark:text-white">AdminSchool</h3>
-            <p className="text-xs text-muted-foreground dark:text-slate-400">© 2025 AdminSchool. All rights reserved.</p>
+            <h3 className="font-medium text-foreground dark:text-white">NihonggoVocabulary</h3>
+            <p className="text-xs text-muted-foreground dark:text-slate-400">© 2025 NihonggoVocabulary. All rights reserved.</p>
           </div>
         </div>
         

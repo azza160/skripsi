@@ -13,6 +13,7 @@ class Contoh_Penggunaan extends Model
         'kata',
         'romaji',
         'arti',
+        'audio',
         'huruf_id',
     ];
 

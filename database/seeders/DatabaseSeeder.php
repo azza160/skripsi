@@ -22,6 +22,10 @@ class DatabaseSeeder extends Seeder
             ContohPenggunaanSeeder::class,
             GambarHurufSeeder::class,
             LevelSeeder::class,
+            KosakataSeeder::class,
+            BentukKosakataSeeder::class,
+            ContohKalimatSeeder::class,
+            PembelajaranSeeder::class
         ]);
 
         User::create([

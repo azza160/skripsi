@@ -18,13 +18,16 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('google_id')->nullable();
-            $table->integer('exp')->default(0);
-            $table->unsignedBigInteger('level_id')->default(1);
+            $table->unsignedInteger('exp')->default(0);
+            $table->unsignedInteger('level')->default(1);
+            $table->enum('status', ['pending', 'aktif'])->default('pending'); // ✅ kolom baru
             $table->enum('peran', ['admin', 'pengguna'])->default('pengguna');
+            $table->date('last_login_date')->nullable();
+            $table->unsignedInteger('login_streak')->default(0);
             $table->string('foto')->nullable();
+            $table->timestamp('email_verified_at')->nullable(); // ✅ waktu verifikasi email
+            $table->string('verification_token')->nullable();
             $table->timestamps();
-
-            $table->foreign('level_id')->references('id')->on('levels')->onDelete('cascade');
         });
     }
 

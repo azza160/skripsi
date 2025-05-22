@@ -17,3 +17,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::middleware('auth')->group(function () {
+    Route::post('/clear-welcome-alert', function () {
+        session()->forget('show_welcome_alert');
+        return response()->json(['success' => true]);
+    });
+});

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('romaji');
             $table->string('arti');
             $table->string('huruf_id');
+            $table->text('audio')->nullable(); // Tambahan field audio untuk simpan link Cloudinary
             $table->foreign('huruf_id')->references('id')->on('hurufs')->onDelete('cascade');
             $table->timestamps();
         });

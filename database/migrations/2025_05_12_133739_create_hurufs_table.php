@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('kategori')->nullable(); // Contoh: vokal, non vokal
             $table->string('groups')->nullable(); // 'a','ka','sa','ta',dll
             $table->text('catatan')->nullable();
+            $table->text('audio')->nullable(); // Tambahan field audio untuk simpan link Cloudinary
             $table->timestamps();
         });
         

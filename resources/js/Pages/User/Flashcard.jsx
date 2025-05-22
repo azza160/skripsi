@@ -965,22 +965,7 @@ export default function Flashcard() {
           </AnimatePresence>
         </div>
 
-        {/* Modern Settings Button - only visible when settings are closed */}
-        {!isSettingsOpen && (
-          <div className="flex justify-center mt-6">
-            <motion.button
-              whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(var(--primary-rgb), 0.3)" }}
-              whileTap={{ scale: 0.95 }}
-              className="px-6 py-3 rounded-full bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white shadow-md flex items-center relative overflow-hidden group"
-              onClick={() => setIsSettingsOpen(true)}
-            >
-              <div className="absolute inset-0 bg-white/20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 "></div>
-              <Settings className="mr-2 h-5 w-5 relative z-10" />
-              <span className="relative z-10">Atur Flashcard</span>
-              <Sparkles className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </motion.button>
-          </div>
-        )}
+    
       </div>
       </div>
     </Dashboard>

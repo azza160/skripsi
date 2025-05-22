@@ -17,28 +17,35 @@ class ContohPenggunaanSeeder extends Seeder
             'kata' => 'ありがとう',
             'romaji' => 'arigatou',
             'arti' => 'Terima kasih',
+            'audio' => 'https://res.cloudinary.com/dzozxilf6/video/upload/v1747371319/hiragana-a-contoh_penggunaan-arigatou-audio_l310z5.wav',
             'huruf_id' => 'H-GO-A', // Sesuaikan dengan id dari huruf
         ]);
 
         Contoh_Penggunaan::create([
-            'kata' => 'ありがとうasdasd',
-            'romaji' => 'arigasdasdatou',
-            'arti' => 'Terima kasih',
-            'huruf_id' => 'H-GO-A', // Sesuaikan dengan id dari huruf
+            'kata' => 'あいさつ',
+            'romaji' => 'aisatsu',
+            'arti' => 'Salam',
+            'audio' => null,
+            'huruf_id' => 'H-GO-A',
         ]);
-
+        
         Contoh_Penggunaan::create([
-            'kata' => 'ありがとう',
-            'romaji' => 'arigxzzxczxatou',
-            'arti' => 'Terima kzxzxzxasih',
-            'huruf_id' => 'H-GO-A', // Sesuaikan dengan id dari huruf
+            'kata' => 'あお',
+            'romaji' => 'ao',
+            'arti' => 'Biru',
+            'audio' => null,
+            'huruf_id' => 'H-GO-A',
         ]);
-
+        
         Contoh_Penggunaan::create([
-            'kata' => 'ありzzzがとう',
-            'romaji' => 'arigaasdasdtou',
-            'arti' => 'Terima kasih',
-            'huruf_id' => 'H-GO-A', // Sesuaikan dengan id dari huruf
+            'kata' => 'あめ',
+            'romaji' => 'ame',
+            'arti' => 'Hujan',
+            'audio' => null,
+            'huruf_id' => 'H-GO-A',
         ]);
+        
+
+     
     }
 }

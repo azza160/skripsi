@@ -1,160 +1,251 @@
-import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
-import { useForm } from '@inertiajs/react';
-import { usePage } from '@inertiajs/react';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import Swal from 'sweetalert2';
+"use client"
 
+import { useState, useEffect } from "react"
+import { Link, router } from "@inertiajs/react";
+import { motion, AnimatePresence } from "framer-motion"
+import { Button } from "@/components/ui/button"
+import { AlertDialog } from "../../components/AlertDialog"
+import { Loading } from "../../components/Loading"
+import { GoogleIcon } from "../../components/google-icon"
+import { Eye, EyeOff, Mail, Lock, ChevronRight, ChevronLeft, BookOpen, Star } from 'lucide-react'
+import { FloatingInput } from "../../components/FloatingInput"
+import { ImageSlider } from "../../components/ImageSlider"
+import { route } from "ziggy-js";
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { 
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { 
-    y: 0, 
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 24
-    }
-  }
-};
-
-export default function Login() {
-  const { props } = usePage();
-  const flash = props.flash;
-  const [showPassword, setShowPassword] = React.useState(false);
-  
-  const {data, setData, post, processing, errors} = useForm({
-    email: '',
-    password: '',
-  });
+export default function LoginPage({ flash }) {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState("")
+  const [showRightPanel, setShowRightPanel] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    if (flash?.message) {
-      Swal.fire({
-        icon: flash.success ? 'success' : 'error',
-        title: flash.success ? 'Sukses' : 'Gagal',
-        text: flash.message,
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#6366f1', // warna tombol (optional)
-      });
+    if (flash.message) {
+      setAlertMessage(flash.message)
+      setShowAlert(true)
     }
-  }, [flash]);
+  }, [flash])
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    post(route('login'));
-  } 
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    try {
+      const response = await router.post(route('login'), {
+        email,
+        password,
+      }, {
+        onSuccess: () => {
+          // Redirect akan ditangani oleh Laravel
+        },
+        onError: (errors) => {
+          if (errors.message) {
+            setAlertMessage(errors.message)
+          } else {
+            setAlertMessage("Terjadi kesalahan saat login. Silakan coba lagi.")
+          }
+          setShowAlert(true)
+        },
+        onFinish: () => {
+          setIsLoading(false)
+        }
+      })
+    } catch (error) {
+      setAlertMessage("Terjadi kesalahan saat login. Silakan coba lagi.")
+      setShowAlert(true)
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = () => {
+    setIsLoading(true)
+    window.location.href = route('google.login')
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[hsl(220,14%,95%)] to-[hsl(252,94%,95%)] p-4">
+      {isLoading && <Loading />}
+      
+      <div className="absolute top-0 left-0 w-full h-64 bg-[hsl(252,94%,56%)] rounded-b-[30%] opacity-10" />
+
       <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="w-full max-w-md"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className={`w-full ${showRightPanel ? "max-w-6xl" : "max-w-xl"} grid ${showRightPanel ? "md:grid-cols-2" : "grid-cols-1"} bg-white rounded-2xl overflow-hidden shadow-2xl relative z-10`}
+        style={{
+          transition: "max-width 0.5s ease-in-out",
+        }}
       >
-        <Card>
-          <CardHeader className="space-y-1">
-            <motion.div variants={itemVariants}>
-              <CardTitle className="text-2xl text-center">Masuk ke Kotoba</CardTitle>
-              <CardDescription className="text-center">
-                Selamat datang kembali! Lanjutkan petualanganmu dalam belajar Bahasa Jepang.
-              </CardDescription>
-            </motion.div>
-          </CardHeader>
-          <CardContent>
-            <motion.form onSubmit={handleSubmit} className="space-y-4">
-              <motion.div variants={itemVariants}>
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  icon={Mail}
-                  value={data.email}
-                  onChange={e => setData('email', e.target.value)}
-                  error={errors.email}
-               
-                />
-              </motion.div>
+        {/* Left side - Form */}
+        <div className="p-6 md:p-8 flex flex-col relative">
+          <div className="absolute top-0 left-0 w-32 h-32 bg-[hsl(252,94%,56%)] opacity-10 rounded-br-full" />
 
-              <motion.div variants={itemVariants} className="relative">
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="password"
-                  icon={Lock}
-                  value={data.password}
-                  onChange={e => setData('password', e.target.value)}
-                  error={errors.password}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="mb-6 relative z-10"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-gradient-to-r from-[hsl(252,94%,56%)] to-[hsl(252,94%,46%)] p-2 rounded-lg">
+                <BookOpen className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[hsl(252,94%,56%)] to-[hsl(252,94%,40%)]">
+                おかえりなさい!
+              </h1>
+            </div>
 
-              <motion.div variants={itemVariants}>
-                <Button
-                  type="submit"
-                  className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-5"
-                  disabled={processing}
-                >
-                  {processing ? 'Masuk...' : 'Masuk'}
-                </Button>
-              </motion.div>
+            <h2 className="text-2xl font-semibold mb-2 flex items-center gap-2">
+              Welcome Back!
+              <div className="flex">
+                {[1, 2, 3].map((i) => (
+                  <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                ))}
+              </div>
+            </h2>
 
-              <motion.div variants={itemVariants}>
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">atau</span>
-                  </div>
-                </div>
-              </motion.div>
+            <p className="text-[hsl(215.4,16.3%,40%)] pr-4">
+              Selamat datang kembali di aplikasi pembelajaran bahasa Jepang kami. Masuk untuk melanjutkan perjalanan
+              belajar Anda dan tingkatkan kemampuan berbahasa Jepang Anda hari ini.
+            </p>
+          </motion.div>
 
-              <motion.div variants={itemVariants}>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full  font-medium py-5"
-                  onClick={() => window.location.href = route('google.login')}
-                >
-                   <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5 mr-2"></img>
-                  Masuk dengan Google
-                </Button>
-              </motion.div>
-            </motion.form>
-          </CardContent>
-          <CardFooter>
-            <motion.p 
-              variants={itemVariants}
-              className="text-center text-sm text-muted-foreground w-full"
+          <form onSubmit={handleSubmit} className="space-y-5 flex-1 relative z-10">
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
             >
-              Belum punya akun?{' '}
-              <a href={route('register')} className="font-medium text-primary hover:underline">
-                Daftar sekarang
-              </a>
-            </motion.p>
-          </CardFooter>
-        </Card>
+              <FloatingInput
+                id="email"
+                type="email"
+                label="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                icon={<Mail className="z-[5] w-5 h-5 text-[hsl(252,94%,56%)]" />}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="relative"
+            >
+              <FloatingInput
+                id="password"
+                type={showPassword ? "text" : "password"}
+                label="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                icon={<Lock className="z-[5] w-5 h-5 text-[hsl(252,94%,56%)]" />}
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[hsl(252,94%,56%)] transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                }
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="space-y-4"
+            >
+              <Button
+                type="submit"
+                className="w-full py-5 bg-gradient-to-r from-[hsl(252,94%,56%)] to-[hsl(252,94%,46%)] hover:from-[hsl(252,94%,50%)] hover:to-[hsl(252,94%,40%)] text-white font-medium rounded-lg shadow-lg shadow-[hsl(252,94%,70%)]/20 transition-all duration-300 hover:shadow-xl hover:shadow-[hsl(252,94%,70%)]/30 hover:-translate-y-1"
+              >
+                Masuk
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => setShowRightPanel(!showRightPanel)}
+                className="w-full flex items-center justify-center gap-2 group text-sm text-[hsl(215.4,16.3%,40%)] hover:text-[hsl(252,94%,56%)] transition-colors py-1"
+              >
+                {showRightPanel ? (
+                  <>
+                    <span>Sembunyikan Gambar</span>
+                    <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                  </>
+                ) : (
+                  <>
+                    <span>Tampilkan Gambar</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            </motion.div>
+          </form>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="mt-5 relative flex items-center"
+          >
+            <div className="flex-grow h-px bg-gradient-to-r from-transparent via-[hsl(214.3,20%,80%)] to-transparent"></div>
+            <span className="mx-4 text-[hsl(215.4,16.3%,40%)] bg-white px-2">Atau</span>
+            <div className="flex-grow h-px bg-gradient-to-r from-transparent via-[hsl(214.3,20%,80%)] to-transparent"></div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+          >
+            <Button
+              variant="outline"
+              className="mt-4 w-full py-5 flex items-center justify-center gap-3 border border-[hsl(214.3,20%,90%)] rounded-lg hover:bg-[hsl(214.3,20%,98%)] transition-all duration-300 hover:border-[hsl(252,94%,56%)]"
+              onClick={handleGoogleLogin}
+            >
+              <GoogleIcon />
+              <span>Masuk dengan Google</span>
+            </Button>
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+            className="mt-5 text-center text-[hsl(215.4,16.3%,40%)]"
+          >
+            Belum punya akun?{" "}
+            <Link href={route('register')} className="text-[hsl(252,94%,56%)] font-medium hover:underline relative group">
+              Daftar Sekarang
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[hsl(252,94%,56%)] transition-all duration-300 group-hover:w-full"></span>
+            </Link>
+          </motion.p>
+
+          <div className="absolute bottom-0 right-0 w-32 h-32 bg-[hsl(252,94%,56%)] opacity-10 rounded-tl-full" />
+        </div>
+
+        {/* Right side - Image Slider */}
+        <AnimatePresence>
+          {showRightPanel && (
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
+              transition={{ duration: 0.5 }}
+              className="hidden md:block relative overflow-hidden"
+            >
+              <ImageSlider />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
+
+      <AlertDialog isOpen={showAlert} message={alertMessage} onClose={() => setShowAlert(false)} />
     </div>
-  );
-} 
+  )
+}
