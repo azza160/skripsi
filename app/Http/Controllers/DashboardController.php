@@ -14,10 +14,10 @@ class DashboardController extends Controller
     private function calculateNextLevelExp($currentLevel)
     {
         $levelConfigs = config('exp.levels'); // ambil dari config/exp.php
-     
+
         // Ambil semua level yang tersedia
         $availableLevels = array_keys($levelConfigs);
-    
+
         // Ambil level maksimal dari config
         $maxLevel = max($availableLevels);
 
@@ -25,7 +25,7 @@ class DashboardController extends Controller
         if ($currentLevel >= $maxLevel) {
             return null; // null = tidak ada level berikutnya
         }
-        
+
         return $levelConfigs[$currentLevel]['max_exp'] ?? null;
     }
 
@@ -44,28 +44,24 @@ class DashboardController extends Controller
 
         //mencari progress pembelajaran
         $pembelajaranProgress = $user
-    ->pembelajarans()
-    ->orderBy('user_belajars.created_at', 'desc') // urutkan dari yang terbaru
-    ->get()
-    ->map(function ($pembelajaran) {
-        return [
-            'id' => $pembelajaran->id,
-            'nama' => $pembelajaran->nama,
-            'desk' => $pembelajaran->desk,
-            'tipe' => $pembelajaran->tipe,
-            'max' => $pembelajaran->max,
-            'jenis' => $pembelajaran->jenis,
-            'progress' => $pembelajaran->pivot->progress ?? 0,
-            'status' => $pembelajaran->pivot->status ?? 'belum selesai',
-            'last_completed_at' => $pembelajaran->pivot->last_completed_at
-                ? Carbon\Carbon::parse($pembelajaran->pivot->last_completed_at)->locale('id')->diffForHumans()
-                : null,
-            'route_name' => $pembelajaran->route_name,
-            'route_params' => $pembelajaran->route_params,
-        ];
-    });
-
-      
+            ->pembelajarans()
+            ->orderBy('user_belajars.created_at', 'desc') // urutkan dari yang terbaru
+            ->get()
+               ->map(function ($pembelajaran) {
+                return [
+                    'id' => $pembelajaran->id,
+                    'nama' => $pembelajaran->nama,
+                    'desk' => $pembelajaran->desk,
+                    'tipe' => $pembelajaran->tipe,
+                    'max' => $pembelajaran->max,
+                    'jenis' => $pembelajaran->jenis,
+                    'progress' => $pembelajaran->pivot->progress ?? 0,
+                    'status' => $pembelajaran->pivot->status ?? 'belum selesai',
+                    'last_completed_at' => $pembelajaran->pivot->last_completed_at ? Carbon\Carbon::parse($pembelajaran->pivot->last_completed_at)->locale('id')->diffForHumans() : null,
+                    'route_name' => $pembelajaran->route_name,
+                    'route_params' => $pembelajaran->route_params,
+                ];
+            });
 
         return Inertia::render('User/Dashboard', [
             'user' => $user,
@@ -78,7 +74,6 @@ class DashboardController extends Controller
             'showWelcomeAlert' => session('show_welcome_alert', false),
             'lastCompletedHumanReadable' => $lastCompletedHumanReadable,
             'lastCompletedHumanReadableKosakata' => $lastCompletedHumanReadableKosakata,
-           
         ]);
     }
 

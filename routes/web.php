@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HurufController;
 use App\Http\Controllers\KosakataController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\QuisController;
 use App\Http\Controllers\UserBelajarController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Mail;
@@ -68,6 +69,14 @@ Route::middleware(['auth'])->group(function () {
     
     Route::get('/dashboard/flashcard', [KosakataController::class,'flashcard'])->name('flashcard');
 
+    //route quis
+    Route::get('/dashboard/pilih-huruf-quis',[QuisController::class,'pilihHurufQuisShow'])->name('pilih-huruf-quis');
+    Route::get('/dashboard/pilih-level-quis/{jenis}',[QuisController::class,'pilihLevelQuisShow'])->name('pilih-level-quis');
+    Route::get('/dashboard/pilih-list-huruf-quis',[QuisController::class,'pilihListHurufQuis'])->name('pilih-list-huruf-quis');
+    Route::get('/dashboard/quis',[QuisController::class,'QuisShow'])->name('quis');
+    Route::get('/dashboard/review-quis',[QuisController::class,'ReviewQuisShow'])->name('review-quis');
+
+    // route progress uses
     Route::post('/user/belajar/update', [UserBelajarController::class, 'updateProgress'])->name('user.belajar.update');
     Route::post('/user/belajar/update-huruf', [UserBelajarController::class, 'updateProgressHuruf'])->name('user.belajar.update-huruf');
     Route::get('/user/belajar/check', [UserBelajarController::class, 'checkLearningRecord'])->name('user.belajar.check');

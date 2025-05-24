@@ -19,6 +19,7 @@
     "dependencies": {
         "@hello-pangea/dnd": "^18.0.1",
         "@hookform/resolvers": "^5.0.1",
+        "@radix-ui/react-accordion": "^1.2.11",
         "@radix-ui/react-alert-dialog": "^1.1.13",
         "@radix-ui/react-avatar": "^1.1.7",
         "@radix-ui/react-dialog": "^1.1.13",
@@ -42,6 +43,7 @@
         "recharts": "^2.15.3",
         "sweetalert2": "^11.18.0",
         "tailwind-merge": "^3.2.0",
+        "tailwindcss-animate": "^1.0.7",
         "ziggy-js": "^2.5.3",
         "zod": "^3.24.2"
     }

@@ -276,6 +276,7 @@ export default function Dashboard({ children }) {
                 <SidebarLink icon={<BookOpenText className="h-5 w-5" />} label="Kosakata" isActive={['list-kosakata', 'detail-kosakata', 'kosakata-flashcard'].some(name => route().current(name))} isOpen={sidebarOpen} href={route('list-kosakata')} />
                 <SidebarLink icon={<FlipVertical className="h-5 w-5" />} label="Flashcard" isActive={['flashcard'].some(name => route().current(name))} isOpen={sidebarOpen} href={route('flashcard')} />
               
+              
               </nav>
 
               {sidebarOpen && (
@@ -285,7 +286,7 @@ export default function Dashboard({ children }) {
               )}
               {!sidebarOpen && <div className="my-6 border-t border-border dark:border-slate-800"></div>}
               <nav className="space-y-1">
-                <SidebarLink icon={<PencilLine className="h-5 w-5" />} label="Kuis Huruf" isOpen={sidebarOpen} />
+                <SidebarLink icon={<PencilLine className="h-5 w-5" />} label="Kuis Huruf" isOpen={sidebarOpen} isActive={['pilih-huruf-quis','pilih-list-huruf-quis','pilih-level-quis'].some(name => route().current(name))} href={route('pilih-huruf-quis')} />
                 <SidebarLink icon={<ListChecks className="h-5 w-5" />} label="Kuis Kosakata" isOpen={sidebarOpen} />
                 <SidebarLink icon={<Trophy className="h-5 w-5" />} label="Leaderboard" isOpen={sidebarOpen} />
                 <SidebarLink
@@ -398,7 +399,7 @@ export default function Dashboard({ children }) {
                     Uji Kemampuan
                   </h3>
                   <nav className="space-y-1">
-                  <SidebarLink icon={<PencilLine className="h-5 w-5" />} label="Kuis Huruf" isOpen={true} />
+                  <SidebarLink icon={<PencilLine className="h-5 w-5" />} label="Kuis Huruf" isOpen={true} isActive={['pilih-huruf-quis','pilih-list-huruf-quis','pilih-level-quis','quis','review-quis'].some(name => route().current(name))} href={route('pilih-huruf-quis')} />
                 <SidebarLink icon={<ListChecks className="h-5 w-5" />} label="Kuis Kosakata" isOpen={true} />
                 <SidebarLink icon={<Trophy className="h-5 w-5" />} label="Leaderboard" isOpen={true} />
                 <SidebarLink

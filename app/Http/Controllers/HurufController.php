@@ -49,22 +49,11 @@ class HurufController extends Controller
 
     public function kategoriHiragana(){
         $user = auth()->user();
-
         //ambil data dari table user_belajar yang pembelajaran_id nya belajar-hiragana-gojuon
         $userBelajar = UserBelajar::where('pembelajaran_id', 'belajar-hiragana-gojuon')->first();
         $progress_gojuon = $userBelajar ? $userBelajar->progress : 0;
-
-        
-
-
-     
-        
-        
- 
         // ambil dari table user_belajar data dengan users_id nya sama dengan user id yang sedang login,lalu pembelajaran_id nya yang mengandung belajar-hiragana-
         $progress = UserBelajar::where('user_id', $user->id)->where('pembelajaran_id', 'like', 'belajar-hiragana-%')->get();
-
- 
         // Define default categories with their max values
         $categories = [
             'gojuon' => [

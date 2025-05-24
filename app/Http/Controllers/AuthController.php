@@ -44,8 +44,6 @@ class AuthController extends Controller
                 ]);
             }
 
-            
-
             if (Auth::attempt($credentials)) {
                 $today = Carbon::today();
                 $user = Auth::user();
